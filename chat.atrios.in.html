@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATRIOS — Leadership Talent Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0e0e0e;
+    --paper: #f5f2ec;
+    --gold: #b89a5c;
+    --gold-light: #d4b87a;
+    --muted: #7a7570;
+    --border: rgba(184,154,92,0.25);
+    --chat-bg: #faf8f4;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  header {
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+  }
+
+  .logo-mark span {
+    color: var(--gold);
+  }
+
+  .logo-sub {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #6db76d;
+    animation: pulse 2.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .chat-window {
+    flex: 1;
+    padding: 40px 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Messages */
+  .msg {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.bot { align-items: flex-start; }
+  .msg.user { align-items: flex-end; }
+
+  .msg-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .bubble {
+    max-width: 85%;
+    padding: 16px 22px;
+    line-height: 1.7;
+    font-size: 13.5px;
+  }
+
+  .msg.bot .bubble {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 0 16px 16px 16px;
+    color: var(--ink);
+    box-shadow: 0 2px 12px rgba(184,154,92,0.08);
+  }
+
+  .msg.user .bubble {
+    background: var(--ink);
+    border-radius: 16px 0 16px 16px;
+    color: var(--paper);
+    font-size: 13px;
+  }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 14px 22px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 0 16px 16px 16px;
+    width: fit-content;
+    margin-bottom: 24px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* Choices */
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+    padding-left: 4px;
+    animation: fadeUp 0.4s 0.1s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .choice-btn {
+    padding: 10px 22px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 100px;
+  }
+
+  .choice-btn:hover {
+    background: var(--gold);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(184,154,92,0.35);
+  }
+
+  .choice-btn.primary {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .choice-btn.primary:hover {
+    background: #2a2a2a;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  }
+
+  /* Input area */
+  .input-area {
+    padding: 20px 0 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .text-input {
+    flex: 1;
+    padding: 14px 18px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+    min-height: 48px;
+    max-height: 120px;
+  }
+
+  .text-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,154,92,0.12);
+  }
+
+  .text-input::placeholder { color: var(--muted); }
+
+  .send-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--ink);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover {
+    background: var(--gold);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(184,154,92,0.35);
+  }
+
+  .send-btn svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1.5px dashed var(--gold);
+    border-radius: 14px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: rgba(184,154,92,0.03);
+    margin-bottom: 16px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    background: rgba(184,154,92,0.08);
+    border-color: var(--gold-light);
+  }
+
+  .upload-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .upload-text {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+  }
+
+  .upload-text strong {
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  input[type="file"] { display: none; }
+
+  /* Skills display */
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .skill-tag {
+    padding: 5px 13px;
+    background: rgba(184,154,92,0.1);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0 24px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Progress */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.6s ease;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Hidden honeypot */
+  .hp-field { display: none; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { padding: 20px 20px; }
+    main { padding: 0 16px; }
+    .bubble { max-width: 95%; font-size: 13px; }
+  }
+
+  .highlight { color: var(--gold); font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 1.1em; }
+
+  .done-state {
+    text-align: center;
+    padding: 40px 24px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .done-icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .done-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .done-sub {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    line-height: 1.9;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">A<span>T</span>RIOS</div>
+    <div class="logo-sub">Leadership Intelligence</div>
+  </div>
+  <div class="status-dot">
+    <div class="dot"></div>
+    Intake Open
+  </div>
+</header>
+
+<main>
+  <div class="chat-window" id="chatWindow">
+    <!-- Messages injected here -->
+  </div>
+
+  <div id="inputArea"></div>
+</main>
+
+<!-- Hidden honeypot -->
+<input type="text" class="hp-field" id="hp_name" name="hp_name" autocomplete="off" tabindex="-1">
+
+<script>
+const chat = document.getElementById('chatWindow');
+const inputArea = document.getElementById('inputArea');
+const progressFill = document.getElementById('progressFill');
+
+// State
+const state = {
+  step: 0,
+  email: '',
+  name: '',
+  skills: [],
+  isExisting: false,
+  current_ctc: '',
+  expected_ctc: '',
+  notice_period: '',
+};
+
+// Simulated backend responses
+async function checkEmail(email) {
+  const res = await fetch('https://api.atrios.in/chat/check-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  return await res.json();
+  // expects: { exists: true/false, candidate: { name, skills, designation, experience } }
+}
+
+async function uploadCV(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('email', state.email);
+  const res = await fetch('https://api.atrios.in/api/v1/candidates/upload', {
+    method: 'POST',
+    body: formData
+    // No Content-Type header — browser sets multipart boundary automatically
+  });
+  return await res.json();
+  // expects: { name, skills, designation }
+}
+
+async function updateCompensation(data) {
+  await delay(800);
+  return { success: true };
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setProgress(pct) {
+  progressFill.style.width = pct + '%';
+}
+
+function scrollBottom() {
+  setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+function addMsg(role, html, delay_ = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const msg = document.createElement('div');
+      msg.className = `msg ${role}`;
+      const label = role === 'bot' ? 'ATRIOS' : 'You';
+      msg.innerHTML = `<div class="msg-label">${label}</div><div class="bubble">${html}</div>`;
+      chat.appendChild(msg);
+      scrollBottom();
+      resolve();
+    }, delay_);
+  });
+}
+
+function showTyping() {
+  const el = document.createElement('div');
+  el.className = 'typing';
+  el.id = 'typingIndicator';
+  el.innerHTML = `<span></span><span></span><span></span>`;
+  chat.appendChild(el);
+  scrollBottom();
+  return el;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function clearInput() {
+  inputArea.innerHTML = '';
+}
+
+function showChoices(options, onSelect) {
+  const div = document.createElement('div');
+  div.className = 'choices';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = `choice-btn ${opt.primary ? 'primary' : ''}`;
+    btn.textContent = opt.label;
+    btn.onclick = () => {
+      div.remove();
+      addMsg('user', opt.label);
+      onSelect(opt.value);
+    };
+    div.appendChild(btn);
+  });
+  inputArea.appendChild(div);
+  scrollBottom();
+}
+
+function showTextInput(placeholder, onSubmit, type = 'text') {
+  clearInput();
+  const div = document.createElement('div');
+  div.className = 'input-area';
+  div.innerHTML = `
+    <textarea class="text-input" placeholder="${placeholder}" rows="1" id="mainInput"></textarea>
+    <button class="send-btn" id="sendBtn">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  `;
+  inputArea.appendChild(div);
+
+  const inp = document.getElementById('mainInput');
+  const btn = document.getElementById('sendBtn');
+
+  inp.focus();
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+  });
+  inp.addEventListener('input', () => {
+    inp.style.height = 'auto';
+    inp.style.height = inp.scrollHeight + 'px';
+  });
+  btn.onclick = submit;
+
+  function submit() {
+    const val = inp.value.trim();
+    if (!val) return;
+    // honeypot check
+    if (document.getElementById('hp_name').value) return;
+    clearInput();
+    addMsg('user', val);
+    onSubmit(val);
+  }
+}
+
+function showUpload(onFile, onSkip) {
+  clearInput();
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">↑</div>
+      <div class="upload-text">
+        <strong>Click to upload</strong> or drag & drop<br>
+        PDF or DOCX · Max 10MB
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.docx">
+    </div>
+  `;
+  inputArea.appendChild(div);
+
+  const zone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+
+  zone.onclick = () => fileInput.click();
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.onchange = () => handleFile(fileInput.files[0]);
+
+  function handleFile(file) {
+    if (!file) return;
+    const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowed.includes(file.type) && !file.name.match(/\.(pdf|docx)$/i)) {
+      alert('Please upload a PDF or DOCX file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) { alert('File size must be under 10MB.'); return; }
+    clearInput();
+    addMsg('user', `📎 ${file.name}`);
+    onFile(file);
+  }
+}
+
+// ───────────────────────────────────────────────
+// FLOW STEPS
+// ───────────────────────────────────────────────
+
+async function step0_welcome() {
+  setProgress(8);
+  await addMsg('bot', `Welcome to <span class="highlight">ATRIOS Consulting</span> 👋<br>Would you like to submit your profile to the ATRIOS Leadership Talent Network?`);
+  await delay(300);
+  showChoices([
+    { label: 'Yes, I\'d like to join', value: 'yes', primary: true },
+    { label: 'No, thank you', value: 'no' }
+  ], val => {
+    if (val === 'yes') step1_email();
+    else stepExit();
+  });
+}
+
+function stepExit() {
+  clearInput();
+  addMsg('bot', 'Thank you for your time. Feel free to return whenever you\'re ready. 🌿');
+}
+
+async function step1_email() {
+  setProgress(18);
+  await addMsg('bot', 'Please enter your email address so we can check if your profile is already with us.');
+  showTextInput('your@email.com', async (email) => {
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      await addMsg('bot', 'That doesn\'t look like a valid email. Please try again.');
+      return showTextInput('your@email.com', arguments.callee);
+    }
+    // Block disposable (simple check)
+    const disposable = ['mailinator.com','tempmail.com','guerrillamail.com','10minutemail.com','throwaway.email'];
+    const domain = email.split('@')[1].toLowerCase();
+    if (disposable.includes(domain)) {
+      await addMsg('bot', 'We\'re unable to accept temporary email addresses. Please use your professional email.');
+      return showTextInput('your@email.com', arguments.callee);
+    }
+    state.email = email;
+    step2_lookup();
+  });
+}
+
+async function step2_lookup() {
+  setProgress(32);
+  clearInput();
+  const typing = showTyping();
+  const result = await checkEmail(state.email);
+  removeTyping();
+
+  if (result.exists) {
+    state.isExisting = true;
+    state.name = result.candidate.name;
+    state.skills = result.candidate.skills;
+    await step3A_existing(result.candidate);
+  } else {
+    await step3B_new();
+  }
+}
+
+async function step3A_existing(candidate) {
+  setProgress(44);
+  await addMsg('bot', `Welcome back, <span class="highlight">${candidate.name}</span> 👋<br>Your profile is already part of the ATRIOS Leadership Talent Network.`);
+  await delay(600);
+  await addMsg('bot', 'Would you like to upload an updated CV, or continue with your existing profile?');
+  showChoices([
+    { label: 'Upload updated CV', value: 'upload' },
+    { label: 'Continue with existing', value: 'continue', primary: true }
+  ], val => {
+    if (val === 'upload') step4_upload();
+    else step5_skills();
+  });
+}
+
+async function step3B_new() {
+  setProgress(38);
+  await addMsg('bot', 'Please upload your CV or your LinkedIn profile export in PDF or DOCX format.');
+  showUpload(file => step4_parseCV(file));
+}
+
+async function step4_upload() {
+  await addMsg('bot', 'Please upload your updated CV below.');
+  showUpload(file => step4_parseCV(file));
+}
+
+async function step4_parseCV(file) {
+  setProgress(55);
+  clearInput();
+  await addMsg('bot', 'Thanks! I\'m reading your profile…');
+  const typing = showTyping();
+  const parsed = await uploadCV(file);
+  removeTyping();
+  state.name = parsed.name;
+  state.skills = parsed.skills;
+  await step5_skills();
+}
+
+async function step5_skills() {
+  setProgress(65);
+  const skillsHtml = `<div>Thank you, <span class="highlight">${state.name}</span></div><div>I can see your key skills as:</div><div class="skills-list">${state.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>`;
+  await addMsg('bot', skillsHtml);
+  await delay(800);
+  step8_close();
+}
+
+async function step8_close() {
+  setProgress(100);
+  clearInput();
+  await addMsg('bot', `That's all from my side, <span class="highlight">${state.name || 'there'}</span>.<br>You're now part of the <strong>ATRIOS Leadership Talent Network</strong>.<br>Our team will reach out when a relevant mandate comes up. ✦`);
+  await delay(600);
+
+  const done = document.createElement('div');
+  done.className = 'done-state';
+  done.innerHTML = `
+    <div class="done-icon">✦</div>
+    <div class="done-title">You're in the Network</div>
+    <div class="done-sub">We'll be in touch when the right mandate arises.<br>Leadership is patient. So are we.</div>
+  `;
+  chat.appendChild(done);
+  scrollBottom();
+}
+
+// ───────────────────────────────────────────────
+// INIT
+// ───────────────────────────────────────────────
+setTimeout(() => step0_welcome(), 400);
+</script>
+</body>
+</html>
