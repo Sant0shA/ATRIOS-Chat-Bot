@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATRIOS — Leadership Talent Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white: #ffffff;
+  --bg: #f7f8fc;
+  --gold: #c49a3c;
+  --gold-soft: #f0e6cc;
+  --navy: #1a2340;
+  --navy-light: #2d3a5e;
+  --slate: #64748b;
+  --slate-light: #94a3b8;
+  --border: #e8eaf0;
+  --shadow-sm: 0 1px 4px rgba(26,35,64,0.06);
+  --shadow-md: 0 4px 20px rgba(26,35,64,0.10);
+  --shadow-lg: 0 8px 40px rgba(26,35,64,0.13);
+  --radius: 18px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--navy);
+  font-family: 'Sora', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── PROGRESS ── */
+.progress-bar { height: 3px; background: var(--border); position: fixed; top:0; left:0; right:0; z-index:300; }
+.progress-fill { height:100%; background: linear-gradient(90deg, var(--gold), #e8c068); transition: width 0.7s cubic-bezier(.4,0,.2,1); border-radius: 0 2px 2px 0; }
+
+/* ── HEADER ── */
+header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top:0; z-index:100;
+  box-shadow: var(--shadow-sm);
+}
+.header-left { display:flex; align-items:center; gap:12px; }
+.header-avatar {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, #1a2340 60%, #2d3a5e);
+  display: flex; align-items:center; justify-content:center;
+  box-shadow: 0 2px 10px rgba(196,154,60,0.28);
+}
+.header-avatar svg { width:21px; height:21px; }
+.header-name { font-size:14px; font-weight:600; color:var(--navy); letter-spacing:0.02em; }
+.header-sub { font-size:11px; color:var(--slate); letter-spacing:0.03em; }
+.header-right { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--slate); letter-spacing:0.05em; text-transform:uppercase; font-weight:500; }
+.online-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; animation: onlinePulse 2.5s infinite; }
+@keyframes onlinePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+}
+
+/* ── MAIN ── */
+main { flex:1; display:flex; flex-direction:column; max-width:720px; width:100%; margin:0 auto; padding:0 16px; }
+.chat-window { flex:1; padding:28px 0 12px; display:flex; flex-direction:column; }
+.date-chip { text-align:center; font-size:11px; color:var(--slate-light); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:24px; font-weight:500; }
+
+/* ── MESSAGES ── */
+.msg { display:flex; gap:10px; margin-bottom:16px; animation: msgIn 0.35s cubic-bezier(.4,0,.2,1) both; }
+@keyframes msgIn { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+.msg.user { flex-direction:row-reverse; }
+
+/* Avatar */
+.avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; }
+.avatar.bot { background: linear-gradient(145deg,#1a2340,#2d3a5e); box-shadow: 0 2px 10px rgba(196,154,60,0.3), 0 0 0 2px var(--gold-soft); }
+.avatar.bot svg { width:19px; height:19px; }
+.avatar.user-av { background: linear-gradient(135deg,#e8eaf0,#d1d5e0); }
+.avatar.user-av svg { width:17px; height:17px; }
+
+.msg-body { display:flex; flex-direction:column; max-width:74%; }
+.msg.user .msg-body { align-items:flex-end; }
+
+.bubble { padding:13px 18px; line-height:1.68; font-size:13.5px; }
+.msg.bot .bubble { background:var(--white); color:var(--navy); border-radius:4px var(--radius) var(--radius) var(--radius); box-shadow:var(--shadow-md); border:1px solid var(--border); }
+.msg.user .bubble { background:var(--navy); color:#dde3f0; border-radius:var(--radius) 4px var(--radius) var(--radius); box-shadow:var(--shadow-md); }
+.msg-time { font-size:10px; color:var(--slate-light); margin-top:5px; padding:0 4px; }
+.msg.user .msg-time { text-align:right; }
+
+/* ── TYPING ── */
+.typing-row { display:flex; gap:10px; margin-bottom:16px; animation:msgIn 0.3s ease both; }
+.typing-bubble { background:var(--white); border:1px solid var(--border); border-radius:4px var(--radius) var(--radius) var(--radius); padding:14px 18px; display:flex; align-items:center; gap:5px; box-shadow:var(--shadow-sm); }
+.typing-bubble span { width:7px; height:7px; border-radius:50%; animation:typingBounce 1.3s infinite; }
+.typing-bubble span:nth-child(1) { background:var(--slate-light); }
+.typing-bubble span:nth-child(2) { background:var(--slate); animation-delay:0.18s; }
+.typing-bubble span:nth-child(3) { background:var(--gold); animation-delay:0.36s; }
+@keyframes typingBounce { 0%,70%,100%{transform:translateY(0);} 35%{transform:translateY(-6px);} }
+
+/* ── CHOICES ── */
+.choices { display:flex; flex-wrap:wrap; gap:9px; margin-bottom:18px; padding-left:46px; animation:msgIn 0.35s 0.1s ease both; opacity:0; animation-fill-mode:forwards; }
+.choice-btn { padding:9px 20px; border-radius:100px; font-family:'Sora',sans-serif; font-size:12.5px; font-weight:500; cursor:pointer; transition:all 0.18s ease; border:1.5px solid var(--border); background:var(--white); color:var(--navy); box-shadow:var(--shadow-sm); }
+.choice-btn:hover { border-color:var(--gold); color:var(--gold); box-shadow:0 4px 16px rgba(196,154,60,0.18); transform:translateY(-1px); }
+.choice-btn.primary { background:var(--navy); border-color:var(--navy); color:white; box-shadow:var(--shadow-md); }
+.choice-btn.primary:hover { background:var(--navy-light); border-color:var(--navy-light); transform:translateY(-1px); }
+
+/* ── INPUT ── */
+.input-wrap { padding:12px 0 24px; border-top:1px solid var(--border); animation:msgIn 0.3s ease both; }
+.input-row { display:flex; gap:10px; align-items:flex-end; background:var(--white); border:1.5px solid var(--border); border-radius:var(--radius); padding:8px 8px 8px 18px; box-shadow:var(--shadow-sm); transition:border-color 0.2s, box-shadow 0.2s; }
+.input-row:focus-within { border-color:var(--navy); box-shadow:0 0 0 3px rgba(26,35,64,0.07); }
+.text-input { flex:1; border:none; outline:none; background:transparent; font-family:'Sora',sans-serif; font-size:13.5px; color:var(--navy); resize:none; min-height:24px; max-height:100px; line-height:1.5; padding:4px 0; }
+.text-input::placeholder { color:var(--slate-light); }
+.send-btn { width:40px; height:40px; border-radius:12px; background:var(--navy); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.18s; }
+.send-btn:hover { background:var(--gold); transform:scale(1.05); }
+.send-btn svg { width:17px; height:17px; stroke:white; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+
+/* ── UPLOAD ── */
+.upload-wrap { padding-left:46px; margin-bottom:14px; }
+.upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:28px 24px; text-align:center; cursor:pointer; background:var(--white); transition:all 0.22s; box-shadow:var(--shadow-sm); animation:msgIn 0.35s ease both; }
+.upload-zone:hover, .upload-zone.drag-over { border-color:var(--gold); background:#fffdf7; box-shadow:0 4px 24px rgba(196,154,60,0.12); }
+.upload-icon-wrap { width:48px; height:48px; border-radius:14px; background:var(--gold-soft); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+.upload-icon-wrap svg { width:22px; height:22px; stroke:var(--gold); fill:none; stroke-width:2; }
+.upload-title { font-size:13px; font-weight:600; color:var(--navy); margin-bottom:5px; }
+.upload-sub { font-size:11.5px; color:var(--slate); line-height:1.7; }
+.upload-sub span { color:var(--gold); font-weight:500; }
+input[type="file"] { display:none; }
+
+/* ── SKILLS ── */
+.skills-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+.skill-tag { padding:5px 13px; background:var(--gold-soft); border:1px solid rgba(196,154,60,0.2); border-radius:100px; font-size:11.5px; color:#8a6a1e; font-weight:500; }
+
+/* ── DONE ── */
+.done-card { margin:8px 0 8px 46px; background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; text-align:center; box-shadow:var(--shadow-md); animation:msgIn 0.5s ease both; }
+.done-check { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#f0faf3,#d1f5de); border:2px solid #86efac; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.done-check svg { width:24px; height:24px; stroke:#16a34a; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.done-title { font-family:'Playfair Display',serif; font-size:20px; color:var(--navy); margin-bottom:8px; font-style:italic; }
+.done-sub { font-size:12px; color:var(--slate); line-height:2; }
+
+.highlight { color:var(--gold); font-family:'Playfair Display',serif; font-style:italic; font-size:1.05em; }
+.hp-field { display:none; }
+
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+@media (max-width:600px) {
+  header { padding:0 14px; }
+  main { padding:0 10px; }
+  .choices { padding-left:40px; }
+  .upload-wrap { padding-left:40px; }
+  .done-card { margin-left:40px; }
+  .bubble { font-size:13px; padding:12px 15px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<header>
+  <div class="header-left">
+    <div class="header-avatar">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 20L12 4L20 20" stroke="#c49a3c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7.5 14.5H16.5" stroke="#c49a3c" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-name">ATRIOS Assistant</div>
+      <div class="header-sub">Leadership Talent Network</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="online-dot"></div>
+    Online
+  </div>
+</header>
+
+<main>
+  <div class="chat-window" id="chatWindow">
+    <div class="date-chip">Today</div>
+  </div>
+  <div id="inputArea"></div>
+</main>
+
+<input type="text" class="hp-field" id="hp_name" name="hp_name" autocomplete="off" tabindex="-1">
+
+<script>
+const chat = document.getElementById('chatWindow');
+const inputArea = document.getElementById('inputArea');
+const progressFill = document.getElementById('progressFill');
+const RAILWAY_BASE = 'https://atrios-talent-intelligence-engine-production.up.railway.app';
+const state = { email:'', name:'', skills:[], isExisting:false };
+
+const BOT_AV = `<div class="avatar bot"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20L12 4L20 20" stroke="#c49a3c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 14.5H16.5" stroke="#c49a3c" stroke-width="2" stroke-linecap="round"/></svg></div>`;
+const USER_AV = `<div class="avatar user-av"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#64748b" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#64748b" stroke-width="1.8" stroke-linecap="round"/></svg></div>`;
+
+async function checkEmail(email) {
+  const res = await fetch(`${RAILWAY_BASE}/chat/check-email`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email}) });
+  if (!res.ok) throw new Error();
+  return res.json();
+}
+async function uploadCV(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('email', state.email);
+  const res = await fetch(`${RAILWAY_BASE}/api/v1/candidates/upload`, { method:'POST', body:fd });
+  if (!res.ok) throw new Error();
+  return res.json();
+}
+
+function delay(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function setProgress(p) { progressFill.style.width = p+'%'; }
+function scrollBottom() { setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),60); }
+function clearInput() { inputArea.innerHTML=''; }
+function nowTime() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+
+function addMsg(role, html) {
+  return new Promise(resolve => {
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+    body.innerHTML = `<div class="bubble">${html}</div><div class="msg-time">${nowTime()}</div>`;
+    msg.innerHTML = role==='bot' ? BOT_AV : USER_AV;
+    msg.appendChild(body);
+    chat.appendChild(msg);
+    scrollBottom();
+    resolve();
+  });
+}
+
+function showTyping() {
+  const row = document.createElement('div');
+  row.className='typing-row'; row.id='typingRow';
+  row.innerHTML = `${BOT_AV}<div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  chat.appendChild(row); scrollBottom();
+}
+function removeTyping() { const el=document.getElementById('typingRow'); if(el) el.remove(); }
+
+function showChoices(options, onSelect) {
+  const div = document.createElement('div');
+  div.className = 'choices';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = `choice-btn ${opt.primary?'primary':''}`;
+    btn.textContent = opt.label;
+    btn.onclick = () => { div.remove(); addMsg('user', opt.label); onSelect(opt.value); };
+    div.appendChild(btn);
+  });
+  inputArea.appendChild(div); scrollBottom();
+}
+
+function showTextInput(placeholder, onSubmit) {
+  clearInput();
+  const wrap = document.createElement('div');
+  wrap.className = 'input-wrap';
+  wrap.innerHTML = `<div class="input-row"><textarea class="text-input" placeholder="${placeholder}" rows="1" id="mainInput"></textarea><button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>`;
+  inputArea.appendChild(wrap);
+  const inp = document.getElementById('mainInput');
+  inp.focus();
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();} });
+  inp.addEventListener('input', ()=>{ inp.style.height='auto'; inp.style.height=inp.scrollHeight+'px'; });
+  document.getElementById('sendBtn').onclick = submit;
+  function submit() {
+    const val=inp.value.trim();
+    if(!val||document.getElementById('hp_name').value) return;
+    clearInput(); addMsg('user',val); onSubmit(val);
+  }
+}
+
+function showUpload(onFile) {
+  clearInput();
+  const wrap = document.createElement('div');
+  wrap.className='upload-wrap';
+  wrap.innerHTML=`<div class="upload-zone" id="uploadZone"><div class="upload-icon-wrap"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="upload-title">Upload your CV</div><div class="upload-sub"><span>Click to browse</span> or drag & drop<br>PDF or DOCX · Max 10MB</div><input type="file" id="fileInput" accept=".pdf,.docx"></div>`;
+  inputArea.appendChild(wrap);
+  const zone=document.getElementById('uploadZone'), fi=document.getElementById('fileInput');
+  zone.onclick=()=>fi.click();
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
+  fi.onchange=()=>handleFile(fi.files[0]);
+  function handleFile(file) {
+    if(!file) return;
+    const ok=['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if(!ok.includes(file.type)&&!file.name.match(/\.(pdf|docx)$/i)){alert('PDF or DOCX only.');return;}
+    if(file.size>10*1024*1024){alert('Max 10MB.');return;}
+    clearInput(); addMsg('user',`📎 ${file.name}`); onFile(file);
+  }
+}
+
+// ── FLOW ──
+async function step0_welcome() {
+  setProgress(10);
+  await addMsg('bot', `Hello! I'm the <span class="highlight">ATRIOS</span> Assistant 👋<br>I'm here to help you join our Leadership Talent Network. Shall we begin?`);
+  await delay(200);
+  showChoices([
+    {label:"Yes, let's begin", value:'yes', primary:true},
+    {label:'Not right now', value:'no'}
+  ], val => val==='yes' ? step1_email() : stepExit());
+}
+
+function stepExit() { clearInput(); addMsg('bot',"No problem at all — feel free to return whenever you're ready. 🌿"); }
+
+async function step1_email() {
+  setProgress(20);
+  await addMsg('bot',"Let's start with your email so I can check if you're already in our network.");
+  askEmail();
+}
+
+function askEmail() {
+  showTextInput('Enter your email address', async email => {
+    if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      await addMsg('bot',"That doesn't look like a valid email — could you double-check?");
+      return askEmail();
+    }
+    const disposable=['mailinator.com','tempmail.com','guerrillamail.com','10minutemail.com','throwaway.email'];
+    if(disposable.includes(email.split('@')[1].toLowerCase())) {
+      await addMsg('bot',"Please use a professional email — temporary domains aren't accepted.");
+      return askEmail();
+    }
+    state.email=email; step2_lookup();
+  });
+}
+
+async function step2_lookup() {
+  setProgress(35); clearInput(); showTyping();
+  try {
+    const result = await checkEmail(state.email);
+    removeTyping();
+    if(result.exists) {
+      state.name=result.candidate?.name||''; state.skills=result.candidate?.skills||[];
+      step3A_existing(result.candidate);
+    } else { step3B_new(); }
+  } catch(e) {
+    removeTyping();
+    await addMsg('bot',"I'm having trouble connecting right now. Let's try again.");
+    step1_email();
+  }
+}
+
+async function step3A_existing(c) {
+  setProgress(50);
+  await addMsg('bot',`Welcome back, <span class="highlight">${c.name}</span>! 👋<br>Your profile is already part of our Leadership Talent Network.`);
+  await delay(400);
+  await addMsg('bot','Would you like to upload an updated CV, or continue with your existing profile?');
+  showChoices([
+    {label:'Upload updated CV', value:'upload'},
+    {label:'Continue with existing', value:'continue', primary:true}
+  ], val => val==='upload' ? step4_upload() : step5_skills());
+}
+
+async function step3B_new() {
+  setProgress(40);
+  await addMsg('bot',"You're new here — welcome! Please upload your CV or LinkedIn profile export.");
+  showUpload(file => step4_parseCV(file));
+}
+
+async function step4_upload() {
+  await addMsg('bot','Go ahead and upload your updated CV below.');
+  showUpload(file => step4_parseCV(file));
+}
+
+async function step4_parseCV(file) {
+  setProgress(62); clearInput();
+  await addMsg('bot',"Thanks! Reading through your profile now…");
+  showTyping();
+  try {
+    const parsed = await uploadCV(file);
+    removeTyping();
+    state.name=parsed.name||parsed.candidate?.name||'';
+    state.skills=parsed.skills||parsed.candidate?.skills||[];
+    step5_skills();
+  } catch(e) {
+    removeTyping();
+    await addMsg('bot',"There was a problem with that file. Please try uploading again.");
+    showUpload(f => step4_parseCV(f));
+  }
+}
+
+async function step5_skills() {
+  setProgress(88);
+  if(state.skills?.length>0) {
+    await addMsg('bot',`Thank you, <span class="highlight">${state.name}</span>!<br>Here are the key skills I found in your profile:<div class="skills-list">${state.skills.map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div>`);
+  } else {
+    await addMsg('bot',`Thank you, <span class="highlight">${state.name||'for sharing your profile'}</span>! Everything looks great.`);
+  }
+  await delay(600);
+  step8_close();
+}
+
+async function step8_close() {
+  setProgress(100); clearInput();
+  await addMsg('bot',`That's everything from my side, <span class="highlight">${state.name||'there'}</span>.<br>You're now officially part of the <strong>ATRIOS Leadership Talent Network</strong>.<br>Our team will be in touch when a relevant mandate comes up. ✦`);
+  await delay(500);
+  const done = document.createElement('div');
+  done.className='done-card';
+  done.innerHTML=`<div class="done-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="done-title">You're in the Network</div><div class="done-sub">We'll be in touch when the right mandate arises.<br>Leadership is patient. So are we.</div>`;
+  chat.appendChild(done); scrollBottom();
+}
+
+setTimeout(()=>step0_welcome(), 500);
+</script>
+</body>
+</html>
