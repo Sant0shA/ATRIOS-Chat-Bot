@@ -519,6 +519,7 @@ async function uploadCV(file) {
   const res = await fetch(`${RAILWAY_BASE}/api/v1/apply`, { method: 'POST', body: fd });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
+  console.log('API response:', JSON.stringify(data));
   return { name: data.name || '', skills: data.skills || [] };
 }
 
@@ -628,11 +629,6 @@ function showUpload(onFile) {
       return showUpload(onFile);
     }
 
-    // SECURITY: bot timing check — less than 8 seconds on page = bot
-    if (!userInteracted || (Date.now() - pageLoadTime) < 8000) {
-      clearInput(); return;
-    }
-
     // SECURITY: daily rate limit
     if (isRateLimited()) {
       clearInput();
@@ -694,28 +690,30 @@ async function step3_parseCV(file, hash) {
   await addMsg('bot', "📎 Got your file — let me take a look…");
   setProgress(70);
 
-  // Start upload in background while showing progress
-  const uploadPromise = uploadCV(file);
-
-  await delay(1800);
-  await addMsg('bot', "🔍 Extracting your profile…");
-  setProgress(80);
-
-  await delay(2000);
-  await addMsg('bot', "✨ Almost done — putting the finishing touches…");
-  setProgress(90);
+  // Show progress messages while uploading
+  const msgTimer1 = setTimeout(() => addMsg('bot', "🔍 Extracting your profile…"), 1800);
+  const msgTimer2 = setTimeout(() => { setProgress(80); addMsg('bot', "✨ Almost done — putting the finishing touches…"); }, 3600);
 
   try {
-    const parsed = await uploadPromise;
+    const parsed = await uploadCV(file);
+
+    // Clear pending timers to prevent duplicate messages
+    clearTimeout(msgTimer1);
+    clearTimeout(msgTimer2);
+
+    setProgress(90);
 
     // Record hash and increment rate counter on success
     recordHash(hash);
     incrementRate();
 
-    state.name = parsed.name || parsed.candidate?.name || '';
-    state.skills = parsed.skills || parsed.candidate?.skills || [];
+    state.name = parsed.name || '';
+    state.skills = parsed.skills || [];
     step4_skills();
   } catch (e) {
+    clearTimeout(msgTimer1);
+    clearTimeout(msgTimer2);
+    console.error('Upload error:', e);
     await addMsg('bot', "There was a problem processing that file. Please try uploading again.");
     showUpload((f, h) => step3_parseCV(f, h));
   }
