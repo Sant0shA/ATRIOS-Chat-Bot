@@ -387,11 +387,10 @@ input[type="file"] { display: none; }
 
 <header>
   <div class="header-left">
-    <!-- ATRIOS Logo Mark: orange triangle with white arrow -->
+    <!-- ATRIOS A monogram -->
     <svg class="logo-mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="18,2 34,32 2,32" fill="#E55934"/>
-      <!-- upward arrow inside triangle -->
-      <polygon points="18,8 24,20 21,20 21,28 15,28 15,20 12,20" fill="white"/>
+      <rect width="36" height="36" rx="9" fill="#E55934"/>
+      <text x="18" y="26" text-anchor="middle" font-family="Sora, sans-serif" font-size="22" font-weight="700" fill="white" letter-spacing="-1">A</text>
     </svg>
     <div class="header-brand">
       <div class="brand-name">ATR<span>I</span>OS</div>
@@ -497,9 +496,9 @@ async function hasMXRecord(domain) {
 
 // ── AVATARS ───────────────────────────────────
 const BOT_AV = `<div class="avatar bot">
-  <svg viewBox="0 0 36 36" fill="none">
-    <polygon points="18,3 33,30 3,30" fill="white" opacity="0.95"/>
-    <polygon points="18,9 23,19 20.5,19 20.5,26 15.5,26 15.5,19 13,19" fill="#E55934"/>
+  <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="34" height="34" rx="17" fill="#E55934"/>
+    <text x="17" y="24" text-anchor="middle" font-family="Sora, sans-serif" font-size="18" font-weight="700" fill="white">A</text>
   </svg>
 </div>`;
 
@@ -515,7 +514,7 @@ async function uploadCV(file) {
   const fd = new FormData();
   fd.append('file', file);
   fd.append('email', state.email);
-  const res = await fetch(`${RAILWAY_BASE}/api/v1/candidates/upload`, { method: 'POST', body: fd });
+  const res = await fetch(`${RAILWAY_BASE}/api/v1/apply`, { method: 'POST', body: fd });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -672,49 +671,12 @@ async function step0_welcome() {
   showChoices([
     { label: "Yes, let's begin", value: 'yes', primary: true },
     { label: 'Not right now', value: 'no' }
-  ], val => val === 'yes' ? step1_email() : stepExit());
+  ], val => val === 'yes' ? step2_upload() : stepExit());
 }
 
 function stepExit() {
   clearInput();
   addMsg('bot', "No problem — feel free to return whenever you're ready. 🌿");
-}
-
-async function step1_email() {
-  setProgress(22);
-  await addMsg('bot', "Let's start with your email address.");
-  askEmail();
-}
-
-function askEmail() {
-  showTextInput('Enter your email address', async email => {
-    // Basic format check
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      await addMsg('bot', "That doesn't look right — could you double-check your email?");
-      return askEmail();
-    }
-
-    // Disposable email block
-    const disposable = ['mailinator.com','tempmail.com','guerrillamail.com','10minutemail.com','throwaway.email','yopmail.com','trashmail.com'];
-    const domain = email.split('@')[1].toLowerCase();
-    if (disposable.includes(domain)) {
-      await addMsg('bot', "Please use a professional email — temporary domains aren't accepted.");
-      return askEmail();
-    }
-
-    // SECURITY: MX record check
-    clearInput();
-    showTyping();
-    const hasMX = await hasMXRecord(domain);
-    removeTyping();
-    if (!hasMX) {
-      await addMsg('bot', `I couldn't verify <strong>${domain}</strong>. Please check your email address and try again.`);
-      return askEmail();
-    }
-
-    state.email = email;
-    step2_upload();
-  });
 }
 
 async function step2_upload() {
@@ -726,11 +688,22 @@ async function step2_upload() {
 async function step3_parseCV(file, hash) {
   setProgress(65);
   clearInput();
-  await addMsg('bot', "Thanks! Reading through your profile now…");
-  showTyping();
+  await addMsg('bot', "📎 Got your file — let me take a look…");
+  setProgress(70);
+
+  // Start upload in background while showing progress
+  const uploadPromise = uploadCV(file);
+
+  await delay(1800);
+  await addMsg('bot', "🔍 Extracting your profile…");
+  setProgress(80);
+
+  await delay(2000);
+  await addMsg('bot', "✨ Almost done — putting the finishing touches…");
+  setProgress(90);
+
   try {
-    const parsed = await uploadCV(file);
-    removeTyping();
+    const parsed = await uploadPromise;
 
     // Record hash and increment rate counter on success
     recordHash(hash);
@@ -740,18 +713,17 @@ async function step3_parseCV(file, hash) {
     state.skills = parsed.skills || parsed.candidate?.skills || [];
     step4_skills();
   } catch (e) {
-    removeTyping();
     await addMsg('bot', "There was a problem processing that file. Please try uploading again.");
     showUpload((f, h) => step3_parseCV(f, h));
   }
 }
 
 async function step4_skills() {
-  setProgress(90);
+  setProgress(95);
+  await addMsg('bot', "✅ Your profile is now added to our network!");
+  await delay(700);
   if (state.skills?.length > 0) {
-    await addMsg('bot', `Thank you, <span class="highlight">${state.name}</span>!<br>Here are the key skills I found in your profile:<div class="skills-list">${state.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>`);
-  } else {
-    await addMsg('bot', `Thank you, <span class="highlight">${state.name || 'for sharing your profile'}</span>! Your details have been captured.`);
+    await addMsg('bot', `Here are the key skills I found, <span class="highlight">${state.name}</span>:<div class="skills-list">${state.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>`);
   }
   await delay(600);
   step5_close();
