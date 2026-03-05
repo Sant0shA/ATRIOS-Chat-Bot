@@ -513,10 +513,13 @@ const USER_AV = `<div class="avatar user-av">
 async function uploadCV(file) {
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('email', state.email);
+  fd.append('name', '');
+  fd.append('email', state.email || '');
+  fd.append('honeypot', '');
   const res = await fetch(`${RAILWAY_BASE}/api/v1/apply`, { method: 'POST', body: fd });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  return { name: data.name || '', skills: data.skills || [] };
 }
 
 // ── HELPERS ───────────────────────────────────
